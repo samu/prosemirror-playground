@@ -4,7 +4,7 @@ import { Schema, DOMParser } from "prosemirror-model";
 import { schema } from "prosemirror-schema-basic";
 import { addListNodes } from "prosemirror-schema-list";
 import { exampleSetup } from "prosemirror-example-setup";
-import "prosemirror-menu/../style/menu.css"
+import "prosemirror-menu/../style/menu.css";
 
 // Mix the nodes from prosemirror-schema-list into the basic schema to
 // create a schema with list support.
