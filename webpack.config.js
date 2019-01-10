@@ -9,7 +9,10 @@ module.exports = {
   resolve: {
     alias: {
       "prosemirror-view": path.resolve(__dirname, "../prosemirror-view/src"),
-      "prosemirror-transform": path.resolve(__dirname, "../prosemirror-transform/src"),
+      "prosemirror-transform": path.resolve(
+        __dirname,
+        "../prosemirror-transform/src"
+      ),
       "prosemirror-state": path.resolve(__dirname, "../prosemirror-state/src"),
       "prosemirror-model": path.resolve(__dirname, "../prosemirror-model/src"),
       "prosemirror-schema-basic": path.resolve(
@@ -25,6 +28,10 @@ module.exports = {
         "../prosemirror-example-setup/src"
       ),
       "prosemirror-menu": path.resolve(__dirname, "../prosemirror-menu/src"),
+      "prosemirror-commands": path.resolve(
+        __dirname,
+        "../prosemirror-commands/src/commands.js"
+      )
     }
   },
   module: {
