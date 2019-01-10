@@ -23,7 +23,8 @@ module.exports = {
       "prosemirror-example-setup": path.resolve(
         __dirname,
         "../prosemirror-example-setup/src"
-      )
+      ),
+      "prosemirror-menu": path.resolve(__dirname, "../prosemirror-menu/src"),
     }
   },
   module: {
