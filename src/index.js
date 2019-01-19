@@ -35,13 +35,13 @@ const myCoolCommand = (state, dispatch) => {
 
   const atStartOfParentNode = $cursor.index($cursor.depth - 1) === 0;
 
-  const insideFirstItemOfList = $cursor.index($cursor.depth - 2) === 0;
-
-  const insideAnotherList =
-    $cursor.node($cursor.depth - 3).type.name === "list_item";
-
   if (atStartOfTextNode && atStartOfParentNode && insideListNode) {
     if (dispatch) {
+      const insideFirstItemOfList = $cursor.index($cursor.depth - 2) === 0;
+
+      const insideAnotherList =
+        $cursor.node($cursor.depth - 3).type.name === "list_item";
+
       let tr = state.tr;
 
       if (insideFirstItemOfList && insideAnotherList) {
