@@ -45,32 +45,26 @@ const myCoolCommand = (state, dispatch) => {
   const insideAnotherList =
     $cursor.node($cursor.depth - 3).type.name === "list_item";
 
-  const listInsideList = insideFirstItemOfList && insideAnotherList;
+  if (atStartOfParentNode && insideListNode) {
+    if (dispatch) {
+      let tr = state.tr;
 
-  if (atStartOfParentNode) {
-    if (insideListNode) {
-      if (dispatch) {
-        let tr = state.tr;
-
-        if (listInsideList) {
-          let range = $cursor.blockRange();
-          let target = range && liftTarget(range);
-          tr = state.tr.lift(range, target);
-        }
-
+      if (insideFirstItemOfList && insideAnotherList) {
+        let range = $cursor.blockRange();
+        let target = range && liftTarget(range);
+        tr = state.tr.lift(range, target);
         tr = tr.join(tr.mapping.map($cursor.pos - 2));
-
-        if (!listInsideList) {
-          tr = tr.join(tr.mapping.map($cursor.pos - 2));
-        }
-
-        tr = tr.scrollIntoView();
-
-        dispatch(tr);
+      } else {
+        tr = tr.join(tr.mapping.map($cursor.pos - 2));
+        tr = tr.join(tr.mapping.map($cursor.pos - 2));
       }
 
-      return true;
+      tr = tr.scrollIntoView();
+
+      dispatch(tr);
     }
+
+    return true;
   }
 
   return false;
