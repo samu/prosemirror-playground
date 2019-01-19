@@ -28,24 +28,19 @@ const myCoolCommand = (state, dispatch) => {
     return false;
   }
 
-  // console.log(state.doc.resolve($cursor.start(-2)).node().type.name);
-
-  console.log($cursor.nodeBefore);
-
-  // we are at the beginning of a node
-  // if ($cursor.parentOffset === 0 && $cursor.index($cursor.depth - 1) === 0) {
-
-  const atStartOfParentNode = $cursor.parentOffset === 0;
+  const atStartOfTextNode = $cursor.parentOffset === 0;
 
   const insideListNode =
     $cursor.node($cursor.depth - 1).type.name === "list_item";
+
+  const atStartOfParentNode = $cursor.index($cursor.depth - 1) === 0;
 
   const insideFirstItemOfList = $cursor.index($cursor.depth - 2) === 0;
 
   const insideAnotherList =
     $cursor.node($cursor.depth - 3).type.name === "list_item";
 
-  if (atStartOfParentNode && insideListNode) {
+  if (atStartOfTextNode && atStartOfParentNode && insideListNode) {
     if (dispatch) {
       let tr = state.tr;
 
