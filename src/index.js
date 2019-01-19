@@ -6,6 +6,7 @@ import { addListNodes } from "prosemirror-schema-list";
 import { exampleSetup } from "prosemirror-example-setup";
 import { keymap } from "prosemirror-keymap";
 import "prosemirror-menu/../style/menu.css";
+import { liftTarget } from "prosemirror-transform";
 
 // Mix the nodes from prosemirror-schema-list into the basic schema to
 // create a schema with list support.
@@ -27,12 +28,36 @@ const myCoolCommand = (state, dispatch) => {
     return false;
   }
 
-  if ($cursor.parentOffset === 0 && $cursor.index($cursor.depth - 1) === 0) {
+  // console.log(state.doc.resolve($cursor.start(-2)).node().type.name);
+
+  console.log($cursor.nodeBefore);
+
+  // we are at the beginning of a node
+  // if ($cursor.parentOffset === 0 && $cursor.index($cursor.depth - 1) === 0) {
+  if ($cursor.parentOffset === 0) {
+    // the node we are in is a list_item
     if ($cursor.node($cursor.depth - 1).type.name === "list_item") {
       if (dispatch) {
+        const insideFirstElement = $cursor.index($cursor.depth - 2) === 0;
+        const insideAnotherList =
+          $cursor.node($cursor.depth - 3).type.name === "list_item";
+
+        const listInsideList = insideFirstElement && insideAnotherList;
+
         let tr = state.tr;
-        tr = tr.join($cursor.pos - 2);
+
+        if (listInsideList) {
+          let range = $cursor.blockRange();
+          let target = range && liftTarget(range);
+          tr = state.tr.lift(range, target);
+        }
+
         tr = tr.join(tr.mapping.map($cursor.pos - 2));
+
+        if (!listInsideList) {
+          tr = tr.join(tr.mapping.map($cursor.pos - 2));
+        }
+
         tr = tr.scrollIntoView();
 
         dispatch(tr);
