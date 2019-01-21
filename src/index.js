@@ -52,12 +52,18 @@ const myCoolOtherCommand = (state, dispatch) => {
     parent.type.name !== "bullet_list" &&
     parent.type.name !== "ordered_list"
   ) {
-    console.log("not a list");
     return false;
   }
 
   // if index > 0, we know we are not on first item of list
   const index = $cursor.index($cursor.depth - 2);
+
+  if (
+    index === 0 &&
+    $cursor.node($cursor.depth - 3).type.name !== "list_item"
+  ) {
+    return false;
+  }
 
   if (dispatch) {
     if (index === 0) {
