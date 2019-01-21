@@ -34,10 +34,6 @@ const mySchema = new Schema({
 const myCoolOtherCommand = (state, dispatch) => {
   let { $cursor } = state.selection;
 
-  return myCoolOtherCommandMain(state, dispatch, state.tr, $cursor);
-};
-
-const myCoolOtherCommandMain = (state, dispatch, tr, $cursor) => {
   if (!$cursor) {
     return false;
   }
@@ -49,8 +45,6 @@ const myCoolOtherCommandMain = (state, dispatch, tr, $cursor) => {
   }
 
   const parent = $cursor.node($cursor.depth - 2);
-
-  const itemType = mySchema.nodes.list_item;
 
   if (
     parent.type.name !== "bullet_list" &&
@@ -68,6 +62,14 @@ const myCoolOtherCommandMain = (state, dispatch, tr, $cursor) => {
   ) {
     return false;
   }
+
+  return myCoolOtherCommandMain(state, dispatch, state.tr, $cursor);
+};
+
+const myCoolOtherCommandMain = (state, dispatch, tr, $cursor) => {
+  const index = $cursor.index($cursor.depth - 2);
+  const parent = $cursor.node($cursor.depth - 2);
+  const itemType = mySchema.nodes.list_item;
 
   if (dispatch) {
     if (index === 0) {
@@ -138,6 +140,7 @@ const myCoolDelete = (state, dispatch) => {
 
   const listItemNode = $cursor.node(-1);
 
+  // case: Three
   const isSecondLastAndFollowedByList =
     $cursor.index(-1) === listItemNode.childCount - 2 &&
     (listItemNode.child(listItemNode.childCount - 1).type.name ===
@@ -147,6 +150,7 @@ const myCoolDelete = (state, dispatch) => {
 
   const listNode = $cursor.node(-2);
 
+  // case: Four
   const isFollowedByListItem =
     listNode.childCount > $cursor.index(-2) + 1 &&
     listNode.child($cursor.index(-2) + 1).type.name === "list_item";
@@ -154,6 +158,17 @@ const myCoolDelete = (state, dispatch) => {
   let $cut = findCutAfter($cursor);
 
   if (!$cut) return false;
+
+  // case: Six
+  const nodeAfterIsListItem = $cut.nodeAfter.type.name === "list_item";
+
+  if (
+    !isSecondLastAndFollowedByList &&
+    !isFollowedByListItem &&
+    !nodeAfterIsListItem
+  ) {
+    return false;
+  }
 
   const offset = isSecondLastAndFollowedByList ? 3 : 2;
 
