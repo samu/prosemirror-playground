@@ -1,4 +1,4 @@
-import { EditorState } from "prosemirror-state";
+import { EditorState, Selection } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import {
   Schema,
@@ -34,9 +34,15 @@ const mySchema = new Schema({
 const myCoolOtherCommand = (state, dispatch) => {
   let { $cursor } = state.selection;
 
+  return myCoolOtherCommandMain(state, dispatch, state.tr, $cursor);
+};
+
+const myCoolOtherCommandMain = (state, dispatch, tr, $cursor) => {
   if (!$cursor) {
     return false;
   }
+
+  console.log($cursor.node().type.name, $cursor.node().textContent);
 
   const atStartOfTextNode = $cursor.parentOffset === 0;
   const atStartOfParentNode = $cursor.index($cursor.depth - 1) === 0;
@@ -68,11 +74,12 @@ const myCoolOtherCommand = (state, dispatch) => {
   if (dispatch) {
     if (index === 0) {
       //prettier-ignore
-      let {$from, $to} = state.selection
+      // let {$from, $to} = state.selection
+      let $from = $cursor, $to = $cursor
       //prettier-ignore
       let range = $from.blockRange($to, node => node.childCount && node.firstChild.type == itemType)
       //prettier-ignore
-      let tr = state.tr, end = range.end, endOfList = range.$to.end(range.depth)
+      let end = range.end, endOfList = range.$to.end(range.depth)
       //prettier-ignore
       if (end < endOfList) {
         // There are siblings after the lifted items, which must become
@@ -88,6 +95,8 @@ const myCoolOtherCommand = (state, dispatch) => {
       tr = tr.scrollIntoView();
       dispatch(tr);
 
+      console.log("here 1");
+
       return true;
     } else {
       const previousSibling = parent.child(index - 1);
@@ -95,13 +104,14 @@ const myCoolOtherCommand = (state, dispatch) => {
         previousSibling.lastChild.type.name === "bullet_list" ||
         previousSibling.lastChild.type.name === "ordered_list"
       ) {
+        console.log("here 2");
         sinkListItem(mySchema.nodes.list_item)(state, dispatch);
         return true;
       } else {
-        let tr = state.tr;
         tr = tr.join($cursor.pos - 2);
         tr = tr.join(tr.mapping.map($cursor.pos - 2));
         dispatch(tr);
+        console.log("here 3");
         return true;
       }
     }
@@ -112,8 +122,62 @@ const myCoolOtherCommand = (state, dispatch) => {
 
 let backspace = myCoolOtherCommand;
 
+// prettier-ignore
+function findCutAfter($pos) {
+  if (!$pos.parent.type.spec.isolating) for (let i = $pos.depth - 1; i >= 0; i--) {
+    let parent = $pos.node(i)
+    if ($pos.index(i) + 1 < parent.childCount) return $pos.doc.resolve($pos.after(i + 1))
+    if (parent.type.spec.isolating) break
+  }
+  return null
+}
+
+const myCoolDelete = (state, dispatch) => {
+  let { $cursor } = state.selection;
+
+  const atEndOfTextNode = $cursor.parentOffset === $cursor.parent.nodeSize - 2;
+
+  const insideListItem = $cursor.node(-1).type.name === "list_item";
+
+  if (!atEndOfTextNode || !insideListItem) {
+    return false;
+  }
+
+  const listItemNode = $cursor.node(-1);
+
+  const isSecondLastAndFollowedByList =
+    $cursor.index(-1) === listItemNode.childCount - 2 &&
+    (listItemNode.child(listItemNode.childCount - 1).type.name ===
+      "bullet_list" ||
+      listItemNode.child(listItemNode.childCount - 1).type.name ===
+        "ordered_list");
+
+  const listNode = $cursor.node(-2);
+
+  const isFollowedByListItem =
+    listNode.childCount > $cursor.index(-2) + 1 &&
+    listNode.child($cursor.index(-2) + 1).type.name === "list_item";
+
+  let $cut = findCutAfter($cursor);
+
+  if (!$cut) return false;
+
+  const offset = isSecondLastAndFollowedByList ? 3 : 2;
+
+  const $pos = state.doc.resolve($cut.pos + offset);
+
+  let tr = state.tr;
+  tr = tr.setSelection(Selection.near($pos));
+  state = state.apply(tr);
+
+  return myCoolOtherCommandMain(state, dispatch, tr, $pos);
+};
+
+let del = myCoolDelete;
+
 let myCoolKeymap = {
-  Backspace: backspace
+  Backspace: backspace,
+  Delete: del
 };
 
 myCoolKeymap = keymap(myCoolKeymap);
