@@ -42,8 +42,6 @@ const myCoolOtherCommandMain = (state, dispatch, tr, $cursor) => {
     return false;
   }
 
-  console.log($cursor.node().type.name, $cursor.node().textContent);
-
   const atStartOfTextNode = $cursor.parentOffset === 0;
   const atStartOfParentNode = $cursor.index($cursor.depth - 1) === 0;
   if (!atStartOfTextNode || !atStartOfParentNode) {
@@ -74,7 +72,6 @@ const myCoolOtherCommandMain = (state, dispatch, tr, $cursor) => {
   if (dispatch) {
     if (index === 0) {
       //prettier-ignore
-      // let {$from, $to} = state.selection
       let $from = $cursor, $to = $cursor
       //prettier-ignore
       let range = $from.blockRange($to, node => node.childCount && node.firstChild.type == itemType)
@@ -95,8 +92,6 @@ const myCoolOtherCommandMain = (state, dispatch, tr, $cursor) => {
       tr = tr.scrollIntoView();
       dispatch(tr);
 
-      console.log("here 1");
-
       return true;
     } else {
       const previousSibling = parent.child(index - 1);
@@ -104,14 +99,12 @@ const myCoolOtherCommandMain = (state, dispatch, tr, $cursor) => {
         previousSibling.lastChild.type.name === "bullet_list" ||
         previousSibling.lastChild.type.name === "ordered_list"
       ) {
-        console.log("here 2");
         sinkListItem(mySchema.nodes.list_item)(state, dispatch);
         return true;
       } else {
         tr = tr.join($cursor.pos - 2);
         tr = tr.join(tr.mapping.map($cursor.pos - 2));
         dispatch(tr);
-        console.log("here 3");
         return true;
       }
     }
