@@ -31,6 +31,10 @@ module.exports = {
       "prosemirror-commands": path.resolve(
         __dirname,
         "../prosemirror-commands/src/commands.js"
+      ),
+      "prosemirror-eager-join": path.resolve(
+        __dirname,
+        "../prosemirror-eager-join/src/eager-join.js"
       )
     }
   },
